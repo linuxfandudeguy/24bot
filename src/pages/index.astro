@@ -1,5 +1,6 @@
-
-
+---
+// index.astro
+---
 
 <html>
   <head>
@@ -49,119 +50,121 @@
     </noscript>
 
     <script>
-      document.getElementById("solve-button").addEventListener("click", () => {
-        const input = document.getElementById("input-numbers").value;
-        const numbers = input.split(",").map((num) => parseFloat(num.trim()));
-        const logElement = document.getElementById("log");
-        const resultContainer = document.getElementById("result-container");
+  document.getElementById("solve-button").addEventListener("click", () => {
+  const input = document.getElementById("input-numbers").value;
+  const numbers = input.split(",").map((num) => parseFloat(num.trim()));
+  const logElement = document.getElementById("log");
+  const resultContainer = document.getElementById("result-container");
 
-        logElement.innerHTML = ""; // Clear previous logs
-        resultContainer.classList.add("hidden"); // Hide the log container initially
+  logElement.innerHTML = ""; // Clear previous logs
+  resultContainer.classList.add("hidden"); // Hide the log container initially
 
-        if (numbers.length !== 4 || numbers.some(isNaN)) {
-          logError("Error: 24bot requires exactly four valid numbers.");
-          resultContainer.classList.remove("hidden");
-          return;
-        }
+  if (numbers.length !== 4 || numbers.some(isNaN)) {
+    logError("Error: 24bot requires exactly four valid numbers.");
+    resultContainer.classList.remove("hidden");
+    return;
+  }
 
-        const start = performance.now();
+  const start = performance.now();
 
-        const logs = [];
-        const solution = calculate24(numbers, (equation, result) => {
-          logs.push(`${equation} = ${result}`);
-        });
+  const logs = [];
+  const solutions = [];
+  calculate24(numbers, (equation, result) => {
+    logs.push(`${equation} = ${result}`);
+    if (Math.abs(result - 24) < 0.00001) {
+      solutions.push({ equation, isSolution: true });
+    } else {
+      solutions.push({ equation, isSolution: false });
+    }
+  });
 
-        const end = performance.now();
+  const end = performance.now();
 
-        logs.forEach((log) => {
-          const div = document.createElement("div");
-          div.textContent = log;
-          logElement.appendChild(div);
-        });
+  logs.forEach((log) => {
+    const div = document.createElement("div");
+    div.textContent = log;
+    logElement.appendChild(div);
+  });
 
-        const resultDiv = document.createElement("div");
-        if (solution) {
-          resultDiv.textContent = `Solution: ${solution} (Found in ${Math.round(
-            end - start
-          )}ms) - Powered by 24bot 🤖`;
-          resultDiv.className = "text-green-600 font-bold mt-4";
-        } else {
-          logError("Error: 24bot could not find a solution after checking all possibilities.");
-          resultDiv.textContent = `No solution found (Checked in ${Math.round(
-            end - start
-          )}ms) - Powered by 24bot 🤖`;
-          resultDiv.className = "text-red-600 font-bold mt-4";
-        }
-        logElement.appendChild(resultDiv);
+  const resultDiv = document.createElement("div");
+  resultDiv.textContent = `Solutions found: ${solutions.filter((sol) => sol.isSolution).length} (Checked in ${Math.round(end - start)}ms) - Powered by 24bot 🤖`;
+  resultDiv.className = "text-green-600 font-bold mt-4";
+  logElement.appendChild(resultDiv);
 
-        resultContainer.classList.remove("hidden"); // Show the log container once done
-      });
+  // Display all solutions, highlighting the valid ones
+  solutions.forEach(({ equation, isSolution }) => {
+    const solutionDiv = document.createElement("div");
+    solutionDiv.textContent = equation;
 
-      function logError(message) {
-        const logElement = document.getElementById("log");
-        const errorDiv = document.createElement("div");
-        errorDiv.textContent = message;
-        errorDiv.className = "text-red-600 font-bold";
-        logElement.appendChild(errorDiv);
-      }
+    if (isSolution) {
+      solutionDiv.className = "text-green-600 font-bold"; // Highlight valid solutions
+    } else {
+      solutionDiv.className = "text-gray-600"; // Normal color for non-solutions
+    }
 
-      function calculate24(numbers, onProgress) {
-        const operators = ["+", "-", "*", "/"];
-        const results = [];
-        let found = false;
+    logElement.appendChild(solutionDiv);
+  });
 
-        // Helper: Generate permutations of an array
-        function permute(arr, m = []) {
-          if (arr.length === 0) results.push(m);
-          for (let i = 0; i < arr.length; i++) {
-            const curr = arr.slice();
-            const next = curr.splice(i, 1);
-            permute(curr.slice(), m.concat(next));
-          }
-        }
+  resultContainer.classList.remove("hidden"); // Show the log container once done
+});
 
-        permute(numbers);
+function logError(message) {
+  const logElement = document.getElementById("log");
+  const errorDiv = document.createElement("div");
+  errorDiv.textContent = message;
+  errorDiv.className = "text-red-600 font-bold";
+  logElement.appendChild(errorDiv);
+}
 
-        // Iterate through permutations
-        for (const perm of results) {
-          if (found) break;
+function calculate24(numbers, onProgress) {
+  const operators = ["+", "-", "*", "/"];
+  const results = [];
+  let found = false;
 
-          for (const op1 of operators) {
-            for (const op2 of operators) {
-              for (const op3 of operators) {
-                // Build equation formats with minimal parentheses
-                const equations = [
-                  `${perm[0]} ${op1} ${perm[1]} ${op2} ${perm[2]} ${op3} ${perm[3]}`,
-                  `(${perm[0]} ${op1} ${perm[1]}) ${op2} ${perm[2]} ${op3} ${perm[3]}`,
-                  `${perm[0]} ${op1} (${perm[1]} ${op2} ${perm[2]}) ${op3} ${perm[3]}`,
-                  `${perm[0]} ${op1} ${perm[1]} ${op2} (${perm[2]} ${op3} ${perm[3]})`,
-                  `((${perm[0]} ${op1} ${perm[1]}) ${op2} ${perm[2]}) ${op3} ${perm[3]}`,
-                ];
+  // Helper: Generate permutations of an array
+  function permute(arr, m = []) {
+    if (arr.length === 0) results.push(m);
+    for (let i = 0; i < arr.length; i++) {
+      const curr = arr.slice();
+      const next = curr.splice(i, 1);
+      permute(curr.slice(), m.concat(next));
+    }
+  }
 
-                for (const equation of equations) {
-                  try {
-                    // Evaluate the equation
-                    const result = eval(equation);
+  permute(numbers);
 
-                    // Log the equation and its result
-                    onProgress(equation, result);
+  // Iterate through permutations
+  for (const perm of results) {
+    for (const op1 of operators) {
+      for (const op2 of operators) {
+        for (const op3 of operators) {
+          // Build equation formats with minimal parentheses
+          const equations = [
+            `${perm[0]} ${op1} ${perm[1]} ${op2} ${perm[2]} ${op3} ${perm[3]}`,
+            `(${perm[0]} ${op1} ${perm[1]}) ${op2} ${perm[2]} ${op3} ${perm[3]}`,
+            `${perm[0]} ${op1} (${perm[1]} ${op2} ${perm[2]}) ${op3} ${perm[3]}`,
+            `${perm[0]} ${op1} ${perm[1]} ${op2} (${perm[2]} ${op3} ${perm[3]})`,
+            `((${perm[0]} ${op1} ${perm[1]}) ${op2} ${perm[2]}) ${op3} ${perm[3]}`,
+          ];
 
-                    // Check for 24
-                    if (Math.abs(result - 24) < 0.00001) {
-                      found = true;
-                      return equation; // Return the first valid equation
-                    }
-                  } catch {
-                    // Skip invalid equations
-                  }
-                }
-              }
+          for (const equation of equations) {
+            try {
+              // Evaluate the equation
+              const result = eval(equation);
+
+              // Log the equation and its result
+              onProgress(equation, result);
+            } catch {
+              // Skip invalid equations
             }
           }
         }
-
-        return null;
       }
-    </script>
+    }
+  }
+
+  return null;
+}
+</script>
   </body>
 </html>
