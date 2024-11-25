@@ -87,24 +87,18 @@
         // Start solving the game
         calculate24(numbers, (equation, result) => {
           equationsChecked.push({ equation, result });
+          const logDiv = document.createElement("div");
+          logDiv.textContent = `${equation} = ${result}`;
           if (Math.abs(result - 24) < 0.00001) {
+            logDiv.className = "text-green-600 font-bold"; // Highlight valid solutions in green
             solutions.push(equation); // Collect valid solutions
+          } else {
+            logDiv.className = "text-red-600 font-bold"; // Invalid solutions in bold red
           }
+          logElement.appendChild(logDiv);
         });
 
         const end = performance.now();
-
-        // Display all logs and valid solutions only after the solving process is done
-        equationsChecked.forEach(({ equation, result }) => {
-          const div = document.createElement("div");
-          div.textContent = `${equation} = ${result}`;
-          if (Math.abs(result - 24) < 0.00001) {
-            div.className = "text-green-600 font-bold"; // Highlight valid solutions
-          } else {
-            div.className = "text-red-600 font-bold"; // Invalid solutions in bold red
-          }
-          logElement.appendChild(div);
-        });
 
         // Display valid solutions
         if (solutions.length > 0) {
