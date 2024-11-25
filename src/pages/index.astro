@@ -37,6 +37,15 @@
           class="border border-gray-300 rounded-md p-4 bg-gray-50 max-h-96 overflow-y-auto font-mono text-sm"
         ></div>
       </div>
+
+      <!-- Solutions Container -->
+      <div id="solutions-container" class="mt-6">
+        <h2 class="text-lg font-semibold mb-2">Valid Solutions</h2>
+        <div
+          id="solutions"
+          class="border border-gray-300 rounded-md p-4 bg-gray-50 max-h-96 overflow-y-auto font-mono text-sm"
+        ></div>
+      </div>
     </div>
 
     <!-- No-JS Warning -->
@@ -54,8 +63,10 @@
         const numbers = input.split(",").map((num) => parseFloat(num.trim()));
         const logElement = document.getElementById("log");
         const resultContainer = document.getElementById("result-container");
+        const solutionsContainer = document.getElementById("solutions");
 
         logElement.innerHTML = ""; // Clear previous logs
+        solutionsContainer.innerHTML = ""; // Clear previous solutions
         resultContainer.classList.add("hidden"); // Hide the log container initially
 
         if (numbers.length !== 4 || numbers.some(isNaN)) {
@@ -66,32 +77,46 @@
 
         const start = performance.now();
 
-        const logs = [];
         const solutions = [];
+        const equationsChecked = [];
         calculate24(numbers, (equation, result) => {
+          equationsChecked.push({ equation, result });
           if (Math.abs(result - 24) < 0.00001) {
-            solutions.push({ equation, isSolution: true });
-          } else {
-            solutions.push({ equation, isSolution: false });
+            solutions.push(equation); // Collect valid solutions
           }
         });
 
         const end = performance.now();
 
-        // Display all logs and results
-        solutions.forEach(({ equation, isSolution }) => {
+        // Display all logs
+        equationsChecked.forEach(({ equation, result }) => {
           const div = document.createElement("div");
-          div.textContent = equation;
-          if (isSolution) {
+          div.textContent = `${equation} = ${result}`;
+          if (Math.abs(result - 24) < 0.00001) {
             div.className = "text-green-600 font-bold"; // Highlight valid solutions
           } else {
-            div.className = "text-gray-600"; // Non-solutions in gray
+            div.className = "text-red-600 font-bold"; // Invalid solutions in bold red
           }
           logElement.appendChild(div);
         });
 
+        // Display valid solutions
+        if (solutions.length > 0) {
+          solutions.forEach((sol) => {
+            const div = document.createElement("div");
+            div.textContent = sol;
+            div.className = "text-green-600 font-bold";
+            solutionsContainer.appendChild(div);
+          });
+        } else {
+          const div = document.createElement("div");
+          div.textContent = "No valid solutions found.";
+          div.className = "text-red-600 font-bold";
+          solutionsContainer.appendChild(div);
+        }
+
         const resultDiv = document.createElement("div");
-        resultDiv.textContent = `Solutions found: ${solutions.filter((sol) => sol.isSolution).length} (Checked in ${Math.round(end - start)}ms) - Powered by 24bot 🤖`;
+        resultDiv.textContent = `Checked all possibilities (Completed in ${Math.round(end - start)}ms) - Powered by 24bot 🤖`;
         resultDiv.className = "text-green-600 font-bold mt-4";
         logElement.appendChild(resultDiv);
 
