@@ -1,6 +1,7 @@
 ---
 // index.astro
 ---
+
 <html>
   <head>
     <title>24 Game Solver (24bot)</title>
@@ -39,7 +40,7 @@
       </div>
 
       <!-- Solutions Container -->
-      <div id="solutions-container" class="mt-6">
+      <div id="solutions-container" class="mt-6 hidden">
         <h2 class="text-lg font-semibold mb-2">Valid Solutions</h2>
         <div
           id="solutions"
@@ -63,11 +64,12 @@
         const numbers = input.split(",").map((num) => parseFloat(num.trim()));
         const logElement = document.getElementById("log");
         const resultContainer = document.getElementById("result-container");
-        const solutionsContainer = document.getElementById("solutions");
+        const solutionsContainer = document.getElementById("solutions-container");
 
         logElement.innerHTML = ""; // Clear previous logs
         solutionsContainer.innerHTML = ""; // Clear previous solutions
         resultContainer.classList.add("hidden"); // Hide the log container initially
+        solutionsContainer.classList.add("hidden"); // Hide the solutions container initially
 
         if (numbers.length !== 4 || numbers.some(isNaN)) {
           logError("Error: 24bot requires exactly four valid numbers.");
@@ -121,6 +123,7 @@
         logElement.appendChild(resultDiv);
 
         resultContainer.classList.remove("hidden"); // Show the log container once done
+        solutionsContainer.classList.remove("hidden"); // Show the solutions container once done
       });
 
       function logError(message) {
