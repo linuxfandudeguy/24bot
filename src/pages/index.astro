@@ -143,8 +143,7 @@
       function calculate24(numbers, onProgress) {
         const operators = ["+", "-", "*", "/"];
         const results = [];
-        let found = false;
-
+        
         // Helper: Generate permutations of an array
         function permute(arr, m = []) {
           if (arr.length === 0) results.push(m);
@@ -159,8 +158,6 @@
 
         // Iterate through permutations
         for (const perm of results) {
-          if (found) break;
-
           for (const op1 of operators) {
             for (const op2 of operators) {
               for (const op3 of operators) {
@@ -180,12 +177,6 @@
 
                     // Log the equation and its result
                     onProgress(equation, result);
-
-                    // Check for 24
-                    if (Math.abs(result - 24) < 0.00001) {
-                      found = true;
-                      return equation; // Return the first valid equation
-                    }
                   } catch {
                     // Skip invalid equations
                   }
