@@ -1,7 +1,6 @@
 ---
 // index.astro
 ---
-
 <html>
   <head>
     <title>24 Game Solver (24bot)</title>
@@ -40,7 +39,7 @@
       </div>
 
       <!-- Solutions Container -->
-      <div id="solutions-container" class="mt-6 hidden">
+      <div id="solutions-container" class="hidden mt-6">
         <h2 class="text-lg font-semibold mb-2">Valid Solutions</h2>
         <div
           id="solutions"
@@ -66,10 +65,13 @@
         const resultContainer = document.getElementById("result-container");
         const solutionsContainer = document.getElementById("solutions-container");
 
-        logElement.innerHTML = ""; // Clear previous logs
-        solutionsContainer.innerHTML = ""; // Clear previous solutions
-        resultContainer.classList.add("hidden"); // Hide the log container initially
-        solutionsContainer.classList.add("hidden"); // Hide the solutions container initially
+        // Clear previous logs and solutions
+        logElement.innerHTML = "";
+        solutionsContainer.innerHTML = "";
+
+        // Hide the containers initially
+        resultContainer.classList.add("hidden");
+        solutionsContainer.classList.add("hidden");
 
         if (numbers.length !== 4 || numbers.some(isNaN)) {
           logError("Error: 24bot requires exactly four valid numbers.");
@@ -81,6 +83,8 @@
 
         const solutions = [];
         const equationsChecked = [];
+
+        // Start solving the game
         calculate24(numbers, (equation, result) => {
           equationsChecked.push({ equation, result });
           if (Math.abs(result - 24) < 0.00001) {
@@ -90,7 +94,7 @@
 
         const end = performance.now();
 
-        // Display all logs
+        // Display all logs and valid solutions only after the solving process is done
         equationsChecked.forEach(({ equation, result }) => {
           const div = document.createElement("div");
           div.textContent = `${equation} = ${result}`;
@@ -117,13 +121,15 @@
           solutionsContainer.appendChild(div);
         }
 
+        // Show both containers after all the work is done
+        resultContainer.classList.remove("hidden");
+        solutionsContainer.classList.remove("hidden");
+
+        // Display the completion message
         const resultDiv = document.createElement("div");
         resultDiv.textContent = `Checked all possibilities (Completed in ${Math.round(end - start)}ms) - Powered by 24bot 🤖`;
         resultDiv.className = "text-green-600 font-bold mt-4";
         logElement.appendChild(resultDiv);
-
-        resultContainer.classList.remove("hidden"); // Show the log container once done
-        solutionsContainer.classList.remove("hidden"); // Show the solutions container once done
       });
 
       function logError(message) {
@@ -153,6 +159,8 @@
 
         // Iterate through permutations
         for (const perm of results) {
+          if (found) break;
+
           for (const op1 of operators) {
             for (const op2 of operators) {
               for (const op3 of operators) {
@@ -172,6 +180,12 @@
 
                     // Log the equation and its result
                     onProgress(equation, result);
+
+                    // Check for 24
+                    if (Math.abs(result - 24) < 0.00001) {
+                      found = true;
+                      return equation; // Return the first valid equation
+                    }
                   } catch {
                     // Skip invalid equations
                   }
